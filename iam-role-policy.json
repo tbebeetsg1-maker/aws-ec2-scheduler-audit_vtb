@@ -1,0 +1,53 @@
+{
+  "RoleName": "SEP14EC2SchedulerRole",
+  "Description": "Execution role for SEP14EC2SchedulerFunction - allows EC2 start/stop/describe, SNS publish, and CloudWatch logging",
+  "Policies": [
+    {
+      "PolicyName": "SEP14EC2StartStopPolicy",
+      "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ec2:StartInstances",
+              "ec2:StopInstances",
+              "ec2:DescribeInstances"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }
+    },
+    {
+      "PolicyName": "SEP14SNSPublishPolicy",
+      "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "sns:Publish",
+            "Resource": "arn:aws:sns:us-east-1:643603452958:SEP14EC2SchedulerAlerts"
+          }
+        ]
+      }
+    },
+    {
+      "PolicyName": "AWSLambdaBasicExecutionRole",
+      "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }
+    }
+  ]
+}
