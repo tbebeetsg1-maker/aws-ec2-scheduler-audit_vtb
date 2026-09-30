@@ -2,7 +2,7 @@
 
 An automated EC2 start/stop scheduler built with Lambda and EventBridge, with email notifications and a persistent audit trail written to an Oracle RDS database.
 
-## Overview
+## <h2><ins>Overview</ins></h2>
 
 This project automates the start/stop lifecycle of an EC2 instance on a schedule, notifies a subscriber by email whenever an action runs, and logs every action to a relational database for auditability. It combines two areas of my training — AWS cloud architecture and Oracle database administration — into one cohesive system.
 
@@ -21,20 +21,20 @@ EventBridge Scheduler (cron)
   Oracle RDS (ec2_activity_log audit table)
 ```
 
-## How it works
+## <h2><ins>How it works</ins></h2>
 
 1. Two EventBridge schedules trigger the same Lambda function on a cron schedule — one passing `{"action": "start"}`, the other `{"action": "stop"}`.
 2. The Lambda function calls the EC2 API to start or stop the target instance.
 3. It publishes a notification to an SNS topic, which emails a subscriber confirming the action.
 4. It writes a row to an Oracle RDS table (`ec2_activity_log`) recording the instance ID, action, status, and timestamp.
 
-## A note on the live infrastructure
+## <h2><ins>A note on the live infrastructure</ins></h2>
 
 This project was built, tested, and validated end-to-end — but it is **not left running**. The RDS instance in particular bills hourly, and there's no reason for an individual to sustain that cost for a demo project that isn't in active use. After each testing session, the EC2 instance is stopped, the RDS instance is deleted, and a snapshot is kept so the database (schema and data included) can be restored in minutes rather than rebuilt from scratch.
 
 In other words: the code, IAM policies, table schema, and schedule configs in this repo are the real, tested artifacts — but the infrastructure itself is spun up only when it's actually being demonstrated or worked on, and torn down right after. This repo reflects that workflow rather than a permanently running environment.
 
-## Files in this repo
+## <h2><ins>Files in this repo</ins></h2>
 
 | File | Description |
 |---|---|
@@ -43,14 +43,14 @@ In other words: the code, IAM policies, table schema, and schedule configs in th
 | `create_table.sql` | DDL for the `ec2_activity_log` audit table in Oracle. |
 | `eventbridge-schedules.json` | Configuration for the two EventBridge schedules (start/stop) and their Lambda targets. |
 
-## Validation
+## <h2><ins>Validation</ins></h2>
 
 The full pipeline was tested end-to-end:
 - Lambda `start` and `stop` actions both returned success and correctly changed EC2 instance state
 - SNS email notifications were received for both actions
 - Both actions were confirmed written to the `ec2_activity_log` table via a live SQL query, with matching timestamps against the SNS notifications
 
-## Troubleshooting: connecting to Oracle RDS
+## <h2><ins>Troubleshooting: connecting to Oracle RDS</ins></h2>
 
 Two issues came up while building this project that are worth documenting, since working through them was as much a part of the learning as the final result.
 
@@ -74,12 +74,12 @@ Lambda's default Python runtime doesn't include the `oracledb` driver needed to 
 
 **Result:** Lambda successfully connects to Oracle RDS and writes a log row on every start/stop action, independently verified via live `SELECT` queries in SQL*Plus.
 
-## Lessons learned / production considerations
+## <h2><ins>Lessons learned / production considerations</ins></h2>
 
 - The EC2 and CloudWatch Logs permissions in the IAM policy use `"Resource": "*"`, which is broader than necessary for this single-instance project. In a production environment, I'd scope this down to a specific instance ARN or use a tag-based condition, so the role can only ever act on the intended instance.
 - Database credentials are handled via Lambda environment variables rather than hardcoded in source, which is what's reflected in this repo.
 - Given the hourly cost of RDS, this project is built around a "spin up, validate, tear down, snapshot" workflow rather than leaving infrastructure running continuously — a deliberate cost-management decision appropriate for a self-funded learning project.
 
-## Tech stack
+## <h2><ins>Tech stack</ins></h2>
 
 AWS Lambda (Python) - Amazon EventBridge Scheduler - Amazon SNS - Amazon EC2 - Amazon RDS (Oracle) - IAM
